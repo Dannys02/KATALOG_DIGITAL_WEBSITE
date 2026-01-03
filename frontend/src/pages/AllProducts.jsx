@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const AllProducts = () => {
     const products = [
@@ -159,7 +160,7 @@ const AllProducts = () => {
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     {filteredProducts.map(product => (
                         <div
                             key={product.id}
@@ -175,15 +176,15 @@ const AllProducts = () => {
                             </div>
 
                             {/* Konten Card */}
-                            <div className="p-6">
+                            <div className="p-4">
                                 {/* Nama Produk */}
-                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">
+                                <h3 className="text-md font-bold text-white mb-2 line-clamp-1">
                                     {product.name}
                                 </h3>
 
                                 {/* Harga Produk */}
                                 <div className="mb-4">
-                                    <p className="text-2xl font-bold text-white">
+                                    <p className="text-sm font-bold text-white">
                                         {product.price}
                                     </p>
                                 </div>
@@ -200,26 +201,28 @@ const AllProducts = () => {
                                 </div>
 
                                 {/* Tombol Action */}
-                                <div className="flex gap-3">
+                                <div className="flex flex-col-reverse
+                                md:flex-row gap-3">
                                     {/* Tombol Lihat Detail */}
-                                    <a
-                                        href="/product/detail/id"
+                                    <Link
+                                        to={`/product/${product.id}`}
                                         className="flex-1 text-center bg-white/10 hover:bg-white/20
-                  text-white font-medium py-3 rounded-full border border-white/20
+                  text-white font-medium py-3 rounded-full border
+                  border-white/20
                   hover:border-white/30 transition-all duration-300"
                                     >
                                         Lihat Detail
-                                    </a>
+                                    </Link>
 
                                     {/* Tombol Beli */}
-                                    <button
+                                    {/*                                    <button
                                         className="flex-1 bg-gradient-to-r from-indigo-600
                   to-purple-600 hover:from-indigo-500 hover:to-purple-500
                   text-white font-medium py-3 rounded-full transition-all
                   duration-300 hover:scale-[1.05]"
                                     >
                                         Beli
-                                    </button>
+                                    </button>*/}
                                 </div>
                             </div>
                         </div>

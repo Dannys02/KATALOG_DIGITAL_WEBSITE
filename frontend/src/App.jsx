@@ -3,6 +3,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import Navbar from "./components/layout/Navbar";
 import NavbarProduct from "./components/layout/NavbarProduct";
 import Footer from "./components/layout/Footer";
@@ -17,6 +18,7 @@ function App() {
     return (
         <>
             <div className="bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 text-white">
+                <ScrollToTop />
                 <Routes>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route
@@ -39,10 +41,7 @@ function App() {
                             </>
                         }
                     />
-                    <Route
-                        path="/product/detail/id"
-                        element={<DetailProduct />}
-                    />
+                    <Route path="/product/:id" element={<DetailProduct />} />
                 </Routes>
             </div>
         </>
