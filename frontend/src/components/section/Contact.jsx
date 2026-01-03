@@ -75,13 +75,13 @@ const Contact = () => {
     };
 
     const createMessageCircleLink = () => {
-        const phoneNumber = "6281234567890"; // Ganti dengan nomor WA yang diinginkan
+        const phoneNumber = "6285645837298"; // Ganti dengan nomor WA yang diinginkan
         const message = `Halo, saya ${formData.name}%0AEmail: ${formData.email}%0ASubjek: ${formData.subject}%0APesan: ${formData.message}`;
         return `https://wa.me/${phoneNumber}?text=${message}`;
     };
 
     const createEmailLink = () => {
-        const email = "contact@dannysstore.com"; // Ganti dengan email yang diinginkan
+        const email = "webdannys@gmail.com"; // Ganti dengan email yang diinginkan
         const subject = encodeURIComponent(formData.subject);
         const body = encodeURIComponent(
             `Nama: ${formData.name}\nEmail: ${formData.email}\nTelepon: ${formData.phone}\n\n${formData.message}`
@@ -93,19 +93,18 @@ const Contact = () => {
         {
             icon: <Phone className="w-6 h-6" />,
             title: "Telepon",
-            info: "+62 812-3456-7890",
+            info: "+62 856-4583-7298",
             desc: "Senin - Jumat, 09:00 - 18:00"
         },
         {
             icon: <Mail className="w-6 h-6" />,
             title: "Email",
-            info: "contact@dannysstore.com",
-            desc: "Respon dalam 24 jam"
+            info: "webdannys@gmail.com"
         },
         {
             icon: <MapPin className="w-6 h-6" />,
             title: "Lokasi",
-            info: "Jakarta, Indonesia",
+            info: "Jawa Timur, Indonesia",
             desc: "Katalog digital online"
         },
         {
@@ -117,10 +116,7 @@ const Contact = () => {
     ];
 
     return (
-        <section
-            id="kontak"
-            className="py-20 bg-gradient-to-b from-gray-900 via-indigo-950 to-gray-900"
-        >
+        <section id="kontak" className="py-20">
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -245,7 +241,7 @@ const Contact = () => {
                                                 ? "border-rose-500/50"
                                                 : "border-white/20"
                                         } rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300`}
-                                        placeholder="email@contoh.com"
+                                        placeholder="dannys@gmail.com"
                                     />
                                     {errors.email && (
                                         <div className="flex items-center gap-2 mt-2 text-rose-400 text-sm">
@@ -265,7 +261,7 @@ const Contact = () => {
                                         value={formData.phone}
                                         onChange={handleChange}
                                         className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-                                        placeholder="+62 812-3456-7890"
+                                        placeholder="+62 854-1476-7889"
                                     />
                                 </div>
                             </div>
@@ -322,14 +318,6 @@ const Contact = () => {
 
                             {/* Action Buttons */}
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <button
-                                    type="submit"
-                                    className="flex-1 group flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
-                                >
-                                    <Send className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                    Kirim Pesan
-                                </button>
-
                                 <a
                                     href={createMessageCircleLink()}
                                     target="_blank"
@@ -338,22 +326,29 @@ const Contact = () => {
                                     onClick={e => {
                                         if (
                                             !formData.name ||
+                                            !formData.subject ||
                                             !formData.message
                                         ) {
                                             e.preventDefault();
                                             alert(
-                                                "Harap isi nama dan pesan terlebih dahulu"
+                                                "Harap isi nama, subjek dan pesan terlebih dahulu"
                                             );
                                         }
                                     }}
                                 >
                                     <MessageCircle className="w-5 h-5" />
-                                    MessageCircle
+                                    WhatSapp
                                 </a>
 
                                 <a
                                     href={createEmailLink()}
-                                    className="flex-1 group flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                                    className="flex-1 group flex items-center
+                                    justify-center gap-2 bg-gradient-to-r
+                                    from-rose-600 to-pink-600
+                                    hover:from-rose-500 hover:to-pink-500
+                                    text-white font-semibold py-4 rounded-xl
+                                    transition-all duration-300
+                                    hover:scale-[1.02]"
                                     onClick={e => {
                                         if (
                                             !formData.email ||
@@ -378,7 +373,7 @@ const Contact = () => {
                                 <span className="text-blue-300 font-medium">
                                     Catatan:
                                 </span>{" "}
-                                Untuk pengiriman melalui MessageCircle atau Email,
+                                Untuk pengiriman melalui WhatSapp atau Email,
                                 pastikan Anda telah mengisi form di atas
                                 terlebih dahulu.
                             </p>
