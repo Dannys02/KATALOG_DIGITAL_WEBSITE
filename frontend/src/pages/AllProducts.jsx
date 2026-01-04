@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AllProducts = () => {
-    const products = [
+    {
+        /*const products = [
         // Pakaian (3 produk)
         {
             id: 1,
@@ -115,7 +116,11 @@ const AllProducts = () => {
             category: "Kecantikan",
             image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop"
         }
-    ];
+    ];*/
+    }
+
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const location = useLocation();
     const params = new URLSearchParams(location.search);
@@ -130,6 +135,26 @@ const AllProducts = () => {
 
         return matchCategory && matchSearch;
     });
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                // URL akan otomatis membawa ?category=Pakaian jika ada
+                const url = activeCategory
+                    ? `http://localhost:8000/api/products?category=${activeCategory}`
+                    : `http://localhost:8000/api/products`;
+
+                const response = await axios.get(url);
+                setProducts(response.data);
+            } catch (error) {
+                console.error("Gagal ambil data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, [activeCategory]); // Re-run saat
 
     const getCategoryColor = category => {
         switch (category) {
@@ -248,7 +273,7 @@ const AllProducts = () => {
                         </h2>
                         <p className="text-gray-400 mt-2">
                             Tidak ditemukan "{searchQ}" di kategori
-                            {activeCategory || "semua"}
+                            {activeCategory || " semua"}
                         </p>
                         <Link
                             to="/product"
