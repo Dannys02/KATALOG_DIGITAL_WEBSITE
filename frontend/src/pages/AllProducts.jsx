@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import * as api from "../api/productService";
 const AllProducts = () => {
     {
         /*const products = [
@@ -140,15 +140,13 @@ const AllProducts = () => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                // URL akan otomatis membawa ?category=Pakaian jika ada
-                const url = activeCategory
-                    ? `http://localhost:8000/api/products?category=${activeCategory}`
-                    : `http://localhost:8000/api/products`;
-
-                const response = await axios.get(url);
-                setProducts(response.data);
-            } catch (error) {
-                console.error("Gagal ambil data", error);
+                const res = await api.getProducts();
+                setProducts(res.data);
+            } catch (err) {
+                console.error(
+                    "Gagal mengambil data:",
+                    err.response?.data || err.message
+                );
             } finally {
                 setLoading(false);
             }
@@ -192,7 +190,11 @@ const AllProducts = () => {
                 </div>
 
                 {/* Products Grid */}
-                {filteredProducts.length > 0 ? (
+                {loading ? (
+                    <div className="flex justify-center">
+                        <div class="custom-loader"></div>
+                    </div>
+                ) : filteredProducts.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {filteredProducts.map(product => (
                             <div
@@ -273,7 +275,7 @@ const AllProducts = () => {
                         </h2>
                         <p className="text-gray-400 mt-2">
                             Tidak ditemukan "{searchQ}" di kategori
-                            {activeCategory || " semua"}
+                            <span> {activeCategory || " semua"} </span>
                         </p>
                         <Link
                             to="/product"
@@ -287,7 +289,11 @@ const AllProducts = () => {
 
                 {/* Info Jumlah Produk */}
                 <div className="mt-12 text-center">
-                    <p className="text-gray-400">
+                    <p
+                        className={`${
+                            loading ? "hidden" : "block"
+                        } text-gray-400`}
+                    >
                         {filteredProducts.length === 0 ? (
                             "Tidak ada produk yang ditampilkan"
                         ) : (
