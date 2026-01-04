@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AllProducts = () => {
@@ -119,10 +120,16 @@ const AllProducts = () => {
     const location = useLocation();
     const params = new URLSearchParams(location.search);
     const activeCategory = params.get("category");
+    const searchQ = params.get("search")?.toLowerCase() || "";
 
-    const filteredProducts = activeCategory
-        ? products.filter(product => product.category === activeCategory)
-        : products;
+    const filteredProducts = products.filter(product => {
+        const matchCategory = activeCategory
+            ? product.category.toLowerCase() === activeCategory.toLowerCase()
+            : true;
+        const matchSearch = product.name.toLowerCase().includes(searchQ);
+
+        return matchCategory && matchSearch;
+    });
 
     const getCategoryColor = category => {
         switch (category) {
@@ -142,7 +149,7 @@ const AllProducts = () => {
     };
 
     return (
-        <section className="py-32">
+        <section className="pt-32 pb-12">
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="text-center mb-12">
@@ -154,68 +161,71 @@ const AllProducts = () => {
                         </span>
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                        Temukan koleksi produk digital premium dari berbagai
+                        Temukan koleksi produk digital kami dari berbagai
                         kategori
                     </p>
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {filteredProducts.map(product => (
-                        <div
-                            key={product.id}
-                            className="group bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02]"
-                        >
-                            {/* Gambar Produk */}
-                            <div className="relative h-48 overflow-hidden">
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                />
-                            </div>
-
-                            {/* Konten Card */}
-                            <div className="p-4">
-                                {/* Nama Produk */}
-                                <h3 className="text-md font-bold text-white mb-2 line-clamp-1">
-                                    {product.name}
-                                </h3>
-
-                                {/* Harga Produk */}
-                                <div className="mb-4">
-                                    <p className="text-sm font-bold text-white">
-                                        {product.price}
-                                    </p>
+                {filteredProducts.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {filteredProducts.map(product => (
+                            <div
+                                key={product.id}
+                                className="group bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-[1.02]"
+                            >
+                                {/* Gambar Produk */}
+                                <div className="relative h-48 overflow-hidden">
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
                                 </div>
 
-                                {/* Kategori Produk */}
-                                <div className="mb-6">
-                                    <span
-                                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(
-                                            product.category
-                                        )}`}
+                                {/* Konten Card */}
+                                <div className="p-4">
+                                    {/* Nama Produk */}
+                                    <h3 className="text-md font-bold text-white mb-2 line-clamp-1">
+                                        {product.name}
+                                    </h3>
+
+                                    {/* Harga Produk */}
+                                    <div className="mb-4">
+                                        <p className="text-sm md:text-lg font-bold text-white">
+                                            {product.price}
+                                        </p>
+                                    </div>
+
+                                    {/* Kategori Produk */}
+                                    <div className="mb-6">
+                                        <span
+                                            className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(
+                                                product.category
+                                            )}`}
+                                        >
+                                            {product.category}
+                                        </span>
+                                    </div>
+
+                                    {/* Tombol Action */}
+                                    <div
+                                        className="flex flex-col-reverse
+                                md:flex-row gap-3"
                                     >
-                                        {product.category}
-                                    </span>
-                                </div>
-
-                                {/* Tombol Action */}
-                                <div className="flex flex-col-reverse
-                                md:flex-row gap-3">
-                                    {/* Tombol Lihat Detail */}
-                                    <Link
-                                        to={`/product/${product.id}`}
-                                        className="flex-1 text-center bg-white/10 hover:bg-white/20
+                                        {/* Tombol Lihat Detail */}
+                                        <Link
+                                            to={`/product/${product.id}`}
+                                            className="flex-1 text-center bg-white/10 hover:bg-white/20
                   text-white font-medium py-3 rounded-full border
                   border-white/20
                   hover:border-white/30 transition-all duration-300"
-                                    >
-                                        Lihat Detail
-                                    </Link>
+                                        >
+                                            Lihat Detail
+                                        </Link>
 
-                                    {/* Tombol Beli */}
-                                    {/*                                    <button
+                                        {/* Tombol Beli */}
+                                        {/*                                    <button
                                         className="flex-1 bg-gradient-to-r from-indigo-600
                   to-purple-600 hover:from-indigo-500 hover:to-purple-500
                   text-white font-medium py-3 rounded-full transition-all
@@ -223,16 +233,46 @@ const AllProducts = () => {
                                     >
                                         Beli
                                     </button>*/}
+                                    </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20">
+                        <div className="bg-white/5 inline-block p-6 rounded-full mb-4">
+                            <Search className="w-12 h-12 text-white/20" />
                         </div>
-                    ))}
-                </div>
+                        <h2 className="text-2xl font-semibold text-white">
+                            Produk tidak tersedia
+                        </h2>
+                        <p className="text-gray-400 mt-2">
+                            Tidak ditemukan "{searchQ}" di kategori
+                            {activeCategory || "semua"}
+                        </p>
+                        <Link
+                            to="/product"
+                            className="group mt-6 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 rounded-full px-8 py-4 text-lg font-medium transition-all duration-300"
+                        >
+                            <span>Lihat Semua Produk</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                        </Link>
+                    </div>
+                )}
 
                 {/* Info Jumlah Produk */}
                 <div className="mt-12 text-center">
                     <p className="text-gray-400">
-                        Menampilkan {products.length} produk katalog digital
+                        {filteredProducts.length === 0 ? (
+                            "Tidak ada produk yang ditampilkan"
+                        ) : (
+                            <>
+                                Menampilkan <b>{filteredProducts.length}</b>{" "}
+                                dari
+                                <b> {products.length} </b> produk katalog
+                                digital
+                            </>
+                        )}
                     </p>
                 </div>
             </div>
