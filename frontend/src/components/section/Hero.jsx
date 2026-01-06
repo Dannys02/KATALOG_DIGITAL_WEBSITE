@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight, Sparkles, Shield, Zap } from "lucide-react";
 
 const Home = () => {
@@ -12,7 +12,7 @@ const Home = () => {
     return (
         <section
             id="beranda"
-            className="py-24 flex flex-col items-center justify-center px-4 text-center"
+            className="fade-in py-24 flex flex-col items-center justify-center px-4 text-center"
         >
             <div className="max-w-4xl mx-auto">
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
@@ -38,7 +38,7 @@ const Home = () => {
                         {" "}
                         hasil
                     </span>{" "}
-                    nyata, bukan  
+                    nyata, bukan
                     <span className="text-purple-300 font-medium">
                         {" "}
                         janji
@@ -104,7 +104,8 @@ const Home = () => {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/product"
+                    <a
+                        href="/product"
                         className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full font-semibold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-indigo-500/30"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2">

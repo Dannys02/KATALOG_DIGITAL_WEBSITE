@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
     Shirt,
@@ -77,7 +77,7 @@ const Category = () => {
     ];
 
     return (
-        <section id="kategori" className="py-20">
+        <section id="kategori" className="fade-in py-20">
             <div className="container mx-auto px-4">
                 {/* Header Section */}
                 <div className="text-center mb-16">

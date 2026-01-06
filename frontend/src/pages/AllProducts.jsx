@@ -152,7 +152,7 @@ const AllProducts = () => {
             }
         };
         fetchProducts();
-    }, [activeCategory]); // Re-run saat
+    }, [activeCategory]);
 
     const getCategoryColor = category => {
         switch (category) {
@@ -191,7 +191,7 @@ const AllProducts = () => {
 
                 {/* Products Grid */}
                 {loading ? (
-                    <div className="flex justify-center">
+                    <div className="flex justify-center min-h-screen">
                         <div class="custom-loader"></div>
                     </div>
                 ) : filteredProducts.length > 0 ? (

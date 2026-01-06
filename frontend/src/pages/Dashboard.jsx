@@ -11,6 +11,7 @@ import {
     Image as ImageIcon,
     Loader2
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
     const [activePage, setActivePage] = useState("dashboard");
@@ -27,6 +28,16 @@ const Dashboard = () => {
         description: "",
         image: null
     });
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // 1. Hapus token dari localStorage
+        localStorage.removeItem("admin_token");
+
+        // 2. Lempar kembali ke halaman login
+        navigate("/login");
+    };
 
     const categories = [
         { id: 1, name: "Pakaian" },
@@ -281,7 +292,9 @@ const Dashboard = () => {
                                     disabled={loading}
                                     className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 px-8 rounded-lg hover:scale-105 transition-transform disabled:opacity-50"
                                 >
-                                    {loading ? "Menyimpan..." : "Perbarui Produk"}
+                                    {loading
+                                        ? "Menyimpan..."
+                                        : "Perbarui Produk"}
                                 </button>
                                 <button
                                     type="button"
@@ -309,7 +322,8 @@ const Dashboard = () => {
                         <div className="grid md:grid-cols-2 gap-8">
                             <img
                                 src={selectedProduct?.image}
-                                className="rounded-xl w-full object-cover h-64 border border-white/10"
+                                className="rounded-xl w-full object-cover
+                                h-fit border border-white/10"
                                 alt=""
                             />
                             <div className="space-y-4">
@@ -460,7 +474,10 @@ const Dashboard = () => {
                     <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                         Admin Panel
                     </h1>
-                    <button className="flex items-center gap-2 text-gray-400 hover:text-rose-400 transition-colors">
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-gray-400 hover:text-rose-400 transition-colors"
+                    >
                         <LogOut className="w-5 h-5" /> Keluar
                     </button>
                 </div>
