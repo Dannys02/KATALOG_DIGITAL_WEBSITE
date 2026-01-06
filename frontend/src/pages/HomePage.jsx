@@ -13,7 +13,7 @@ const Home = () => {
         // Simulasi mengambil data dari API
         setTimeout(() => {
             setLoading(false);
-        }, 2000);
+        }, 1000);
     }, []);
 
     if (loading) {

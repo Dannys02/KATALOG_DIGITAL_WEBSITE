@@ -3,122 +3,9 @@ import { useLocation } from "react-router-dom";
 import { Search, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import * as api from "../api/productService";
-const AllProducts = () => {
-    {
-        /*const products = [
-        // Pakaian (3 produk)
-        {
-            id: 1,
-            name: "Kaos Premium Digital",
-            price: "Rp 149.000",
-            category: "Pakaian",
-            image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=300&fit=crop"
-        },
-        {
-            id: 2,
-            name: "Kemeja Formal Digital",
-            price: "Rp 299.000",
-            category: "Pakaian",
-            image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=300&fit=crop"
-        },
-        {
-            id: 3,
-            name: "Jaket Casual Digital",
-            price: "Rp 399.000",
-            category: "Pakaian",
-            image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=300&fit=crop"
-        },
-        // Sepatu (3 produk)
-        {
-            id: 4,
-            name: "Sneakers Sport Digital",
-            price: "Rp 549.000",
-            category: "Sepatu",
-            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop"
-        },
-        {
-            id: 5,
-            name: "Sepatu Formal Digital",
-            price: "Rp 699.000",
-            category: "Sepatu",
-            image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=300&fit=crop"
-        },
-        {
-            id: 6,
-            name: "Sandal Premium Digital",
-            price: "Rp 249.000",
-            category: "Sepatu",
-            image: "https://images.unsplash.com/photo-1588117260148-b47818741c74?w=400&h=300&fit=crop"
-        },
-        // Tas (3 produk)
-        {
-            id: 7,
-            name: "Backpack Urban Digital",
-            price: "Rp 429.000",
-            category: "Tas",
-            image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop"
-        },
-        {
-            id: 8,
-            name: "Tas Ransel Premium",
-            price: "Rp 379.000",
-            category: "Tas",
-            image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=300&fit=crop"
-        },
-        {
-            id: 9,
-            name: "Clutch Malam Digital",
-            price: "Rp 279.000",
-            category: "Tas",
-            image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=300&fit=crop"
-        },
-        // Aksesoris (3 produk)
-        {
-            id: 10,
-            name: "Jam Tangan Digital",
-            price: "Rp 899.000",
-            category: "Aksesoris",
-            image: "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400&h=300&fit=crop"
-        },
-        {
-            id: 11,
-            name: "Kalung Emas Digital",
-            price: "Rp 1.299.000",
-            category: "Aksesoris",
-            image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=300&fit=crop"
-        },
-        {
-            id: 12,
-            name: "Cincin Premium Digital",
-            price: "Rp 599.000",
-            category: "Aksesoris",
-            image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop"
-        },
-        // Kecantikan (3 produk)
-        {
-            id: 13,
-            name: "Parfum Luxury Digital",
-            price: "Rp 799.000",
-            category: "Kecantikan",
-            image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop"
-        },
-        {
-            id: 14,
-            name: "Skincare Set Digital",
-            price: "Rp 1.499.000",
-            category: "Kecantikan",
-            image: "https://images.unsplash.com/photo-1556228578-9c360e1d8d34?w=400&h=300&fit=crop"
-        },
-        {
-            id: 15,
-            name: "Makeup Kit Digital",
-            price: "Rp 999.000",
-            category: "Kecantikan",
-            image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=300&fit=crop"
-        }
-    ];*/
-    }
+import ProductSkeleton from "../components/skeletons/ProductSkeleton";
 
+const AllProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -148,7 +35,9 @@ const AllProducts = () => {
                     err.response?.data || err.message
                 );
             } finally {
-                setLoading(false);
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000);
             }
         };
         fetchProducts();
@@ -191,11 +80,11 @@ const AllProducts = () => {
 
                 {/* Products Grid */}
                 {loading ? (
-                    <div className="flex justify-center min-h-screen">
-                        <div class="custom-loader"></div>
-                    </div>
+                    <ProductSkeleton
+                        count={searchQ || activeCategory ? 2 : 8}
+                    />
                 ) : filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <div className="fade-in grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {filteredProducts.map(product => (
                             <div
                                 key={product.id}

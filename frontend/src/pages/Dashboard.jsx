@@ -12,6 +12,7 @@ import {
     Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
 
 const Dashboard = () => {
     const [activePage, setActivePage] = useState("dashboard");
@@ -62,7 +63,9 @@ const Dashboard = () => {
                 err.response?.data || err.message
             );
         } finally {
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
         }
     };
 
@@ -168,11 +171,7 @@ const Dashboard = () => {
 
     const renderContent = () => {
         if (loading && activePage === "dashboard") {
-            return (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-                </div>
-            );
+            return <DashboardSkeleton />;
         }
 
         switch (activePage) {
@@ -346,7 +345,7 @@ const Dashboard = () => {
                 );
             default:
                 return (
-                    <div className="space-y-8">
+                    <div className="fade-in space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-gradient-to-br from-indigo-500/10 to-purple-900/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                                 <p className="text-gray-400 text-sm">

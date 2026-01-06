@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Back from "../components/UI/Back";
+import DetailSkeleton from "../components/skeletons/DetailSkeleton";
 import * as api from "../api/productService";
 
 const DetailProduct = () => {
@@ -17,7 +18,9 @@ const DetailProduct = () => {
             } catch (err) {
                 console.error("Gagal ambil data:", err);
             } finally {
-                setLoading(false);
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1000);
             }
         };
         fetchProducts();
@@ -50,13 +53,10 @@ const DetailProduct = () => {
                 </div>
 
                 <div className="max-w-6xl mx-auto">
-                    {/* Logika Loading: Kalau masih loading tampilkan loader, kalau sudah selesai tampilkan konten */}
                     {loading ? (
-                        <div className="flex justify-center items-center py-20">
-                            <div className="custom-loader"></div>
-                        </div>
+                        <DetailSkeleton />
                     ) : product ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div className="fade-in grid grid-cols-1 lg:grid-cols-2 gap-12">
                             {/* Gambar Produk Besar */}
                             <div>
                                 <div className="rounded-2xl overflow-hidden border border-white/10">
