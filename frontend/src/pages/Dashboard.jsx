@@ -7,9 +7,7 @@ import {
     Trash2,
     Eye,
     LogOut,
-    Package,
     Image as ImageIcon,
-    Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
@@ -27,17 +25,28 @@ const Dashboard = () => {
         category_id: "1",
         stock: "",
         description: "",
+        specifications: [{ name: "", value: "" }],
         image: null
     });
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        // 1. Hapus token dari localStorage
-        localStorage.removeItem("admin_token");
+    const addSpecField = () => {
+        setFormData({
+            ...formData,
+            specifications: [...formData.specifications, { name: "", value: "" }]
+        });
+    };
 
-        // 2. Lempar kembali ke halaman login
-        navigate("/login");
+    const removeSpecField = (index) => {
+        const newSpecs = formData.specifications.filter((_, i) => i !== index);
+        setFormData({ ...formData, specifications: newSpecs.length ? newSpecs : [{ name: "", value: "" }] });
+    };
+
+    const handleSpecChange = (index, field, value) => {
+        const newSpecs = [...formData.specifications];
+        newSpecs[index][field] = value;
+        setFormData({ ...formData, specifications: newSpecs });
     };
 
     const categories = [
@@ -48,25 +57,15 @@ const Dashboard = () => {
         { id: 5, name: "Kecantikan" }
     ];
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+    useEffect(() => { fetchProducts(); }, []);
 
     const fetchProducts = async () => {
         setLoading(true);
         try {
             const res = await api.getProducts();
             setProducts(res.data);
-        } catch (err) {
-            console.error(
-                "Gagal mengambil data:",
-                err.response?.data || err.message
-            );
-        } finally {
-            setTimeout(() => {
-                setLoading(false);
-            }, 1000);
-        }
+        } catch (err) { console.error("Error:", err); }
+        finally { setTimeout(() => setLoading(false), 1000); }
     };
 
     const handleInputChange = e => {
@@ -80,13 +79,8 @@ const Dashboard = () => {
 
     const resetForm = () => {
         setFormData({
-            id: "",
-            name: "",
-            price: "",
-            category_id: "1",
-            stock: "",
-            description: "",
-            image: null
+            id: "", name: "", price: "", category_id: "1",
+            stock: "", description: "", specifications: [{ name: "", value: "" }], image: null
         });
     };
 
@@ -94,12 +88,12 @@ const Dashboard = () => {
         setFormData({
             id: product.id,
             name: product.name,
-            // Hilangkan format Rp dan titik agar bisa masuk ke input number
             price: product.price.replace(/[^0-9]/g, ""),
-            category_id:
-                categories.find(c => c.name === product.category)?.id || "1",
+            category_id: categories.find(c => c.name === product.category)?.id || "1",
             stock: product.stock || 0,
             description: product.description || "",
+            specifications: product.specifications && product.specifications.length > 0 
+                ? product.specifications : [{ name: "", value: "" }],
             image: null
         });
         setActivePage("edit");
@@ -108,71 +102,34 @@ const Dashboard = () => {
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
-
         const data = new FormData();
         data.append("name", formData.name);
         data.append("price", formData.price);
         data.append("category_id", formData.category_id);
         data.append("stock", formData.stock);
         data.append("description", formData.description || "");
-        // Spek default agar database tidak null jika field required
-        data.append(
-            "specifications",
-            JSON.stringify([{ name: "Kualitas", value: "Original" }])
-        );
+        data.append("specifications", JSON.stringify(formData.specifications));
 
-        if (formData.image) {
-            data.append("image", formData.image);
-        }
+        if (formData.image) data.append("image", formData.image);
 
         try {
-            if (activePage === "tambah") {
-                await api.storeProduct(data);
-            } else {
-                await api.updateProduct(formData.id, data);
-            }
-            alert("Berhasil menyimpan produk!");
-            resetForm();
-            fetchProducts();
-            setActivePage("dashboard");
-        } catch (err) {
-            console.error("DEBUG ERROR LENGKAP:", err.response?.data);
-
-            if (err.response?.status === 422) {
-                const errors = err.response.data.errors;
-                const firstError = Object.values(errors)[0][0];
-                alert("Gagal Simpan (Validasi): " + firstError);
-            } else if (!err.response) {
-                alert(
-                    "Koneksi Terputus! Pastikan Server Laravel sudah 'php artisan serve'"
-                );
-            } else {
-                alert(
-                    "Error Server: " +
-                        (err.response?.data?.message ||
-                            "Terjadi kesalahan internal")
-                );
-            }
-        } finally {
-            setLoading(false);
-        }
+            if (activePage === "tambah") await api.storeProduct(data);
+            else await api.updateProduct(formData.id, data);
+            alert("Berhasil!");
+            resetForm(); fetchProducts(); setActivePage("dashboard");
+        } catch (err) { alert("Gagal!"); }
+        finally { setLoading(false); }
     };
 
     const handleDelete = async id => {
-        if (window.confirm("Hapus produk ini?")) {
-            try {
-                await api.deleteProduct(id);
-                fetchProducts();
-            } catch (err) {
-                alert("Gagal menghapus produk");
-            }
+        if (window.confirm("Hapus?")) {
+            try { await api.deleteProduct(id); fetchProducts(); }
+            catch (err) { alert("Gagal!"); }
         }
     };
 
     const renderContent = () => {
-        if (loading && activePage === "dashboard") {
-            return <DashboardSkeleton />;
-        }
+        if (loading && activePage === "dashboard") return <DashboardSkeleton />;
 
         switch (activePage) {
             case "tambah":
@@ -180,131 +137,61 @@ const Dashboard = () => {
                 return (
                     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
                         <h2 className="text-2xl font-bold text-white mb-6">
-                            {activePage === "tambah"
-                                ? "Tambah Produk"
-                                : "Edit Produk"}
+                            {activePage === "tambah" ? "Tambah Produk" : "Edit Produk"}
                         </h2>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6 text-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-gray-400 mb-2 text-sm">
-                                        Nama Produk
-                                    </label>
-                                    <input
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        type="text"
-                                        required
-                                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-indigo-500 outline-none"
-                                    />
+                                    <label className="block text-gray-400 mb-2 text-sm">Nama Produk</label>
+                                    <input name="name" value={formData.name} onChange={handleInputChange} required className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 outline-none" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-400 mb-2 text-sm">
-                                        Kategori
-                                    </label>
-                                    <select
-                                        name="category_id"
-                                        value={formData.category_id}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white"
-                                    >
-                                        {categories.map(cat => (
-                                            <option
-                                                key={cat.id}
-                                                value={cat.id}
-                                                className="text-black"
-                                            >
-                                                {cat.name}
-                                            </option>
-                                        ))}
+                                    <label className="block text-gray-400 mb-2 text-sm">Kategori</label>
+                                    <select name="category_id" value={formData.category_id} onChange={handleInputChange} className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3">
+                                        {categories.map(cat => <option key={cat.id} value={cat.id} className="text-black">{cat.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-gray-400 mb-2 text-sm">
-                                        Harga (Angka saja)
-                                    </label>
-                                    <input
-                                        name="price"
-                                        value={formData.price}
-                                        onChange={handleInputChange}
-                                        type="number"
-                                        required
-                                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-indigo-500 outline-none"
-                                    />
+                                    <label className="block text-gray-400 mb-2 text-sm">Harga</label>
+                                    <input name="price" value={formData.price} onChange={handleInputChange} type="number" required className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 outline-none" />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-400 mb-2 text-sm">
-                                        Stok
-                                    </label>
-                                    <input
-                                        name="stock"
-                                        value={formData.stock}
-                                        onChange={handleInputChange}
-                                        type="number"
-                                        required
-                                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-indigo-500 outline-none"
-                                    />
+                                    <label className="block text-gray-400 mb-2 text-sm">Stok</label>
+                                    <input name="stock" value={formData.stock} onChange={handleInputChange} type="number" required className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 outline-none" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-gray-400 mb-2 text-sm">
-                                    Gambar Produk
-                                </label>
+                                <label className="block text-gray-400 mb-2 text-sm">Gambar</label>
                                 <div className="flex items-center gap-4">
                                     <div className="w-20 h-20 bg-white/10 rounded-lg border border-dashed border-white/30 flex items-center justify-center overflow-hidden">
-                                        {formData.image instanceof File ? (
-                                            <img
-                                                src={URL.createObjectURL(
-                                                    formData.image
-                                                )}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <ImageIcon className="text-white/20" />
-                                        )}
+                                        {formData.image ? <img src={URL.createObjectURL(formData.image)} className="w-full h-full object-cover" alt="" /> : <ImageIcon className="text-white/20" />}
                                     </div>
-                                    <input
-                                        name="image"
-                                        type="file"
-                                        onChange={handleInputChange}
-                                        className="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-600 file:text-white"
-                                    />
+                                    <input name="image" type="file" onChange={handleInputChange} className="text-sm" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-gray-400 mb-2 text-sm">
-                                    Deskripsi
-                                </label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    rows="4"
-                                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:border-indigo-500 outline-none"
-                                ></textarea>
+                                <label className="block text-gray-400 mb-2 text-sm">Deskripsi</label>
+                                <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 outline-none"></textarea>
                             </div>
+
+                            {/* BAGIAN SPEK */}
+                            <div className="space-y-4 border-t border-white/10 pt-4">
+                                <label className="block text-gray-400 text-sm">Spesifikasi</label>
+                                {formData.specifications.map((spec, index) => (
+                                    <div key={index} className="flex flex-col gap-2">
+                                        <input placeholder="Nama" value={spec.name} onChange={(e) => handleSpecChange(index, "name", e.target.value)} className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 outline-none" />
+                                        <input placeholder="Nilai" value={spec.value} onChange={(e) => handleSpecChange(index, "value", e.target.value)} className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 outline-none" />
+                                        <button type="button" onClick={() => removeSpecField(index)} className="text-rose-500 p-2"><Trash2 size={18}/></button>
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addSpecField} className="text-indigo-400 text-xs flex items-center gap-1"><PlusCircle size={14}/> Tambah Baris</button>
+                            </div>
+
                             <div className="flex gap-3 pt-4">
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium py-3 px-8 rounded-lg hover:scale-105 transition-transform disabled:opacity-50"
-                                >
-                                    {loading
-                                        ? "Menyimpan..."
-                                        : "Perbarui Produk"}
+                                <button type="submit" disabled={loading} className="bg-indigo-600 text-white py-3 px-8 rounded-lg hover:scale-105 transition-transform disabled:opacity-50">
+                                    {loading ? "Proses..." : "Simpan"}
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setActivePage("dashboard");
-                                        resetForm();
-                                    }}
-                                    className="bg-white/10 text-white py-3 px-8 rounded-lg border border-white/20"
-                                >
-                                    Batal
-                                </button>
+                                <button type="button" onClick={() => { setActivePage("dashboard"); resetForm(); }} className="bg-white/10 text-white py-3 px-8 rounded-lg">Batal</button>
                             </div>
                         </form>
                     </div>
@@ -312,148 +199,46 @@ const Dashboard = () => {
             case "detail":
                 return (
                     <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 text-white">
-                        <button
-                            onClick={() => setActivePage("dashboard")}
-                            className="mb-6 text-indigo-400 flex items-center gap-2"
-                        >
-                            ← Kembali
-                        </button>
+                        <button onClick={() => setActivePage("dashboard")} className="mb-6 text-indigo-400">← Kembali</button>
                         <div className="grid md:grid-cols-2 gap-8">
-                            <img
-                                src={selectedProduct?.image}
-                                className="rounded-xl w-full object-cover
-                                h-fit border border-white/10"
-                                alt=""
-                            />
+                            <img src={selectedProduct?.image} className="rounded-xl w-full h-fit border border-white/10" alt="" />
                             <div className="space-y-4">
-                                <h2 className="text-3xl font-bold">
-                                    {selectedProduct?.name}
-                                </h2>
-                                <p className="text-2xl text-indigo-400 font-bold">
-                                    {selectedProduct?.price}
-                                </p>
-                                <div className="inline-block px-3 py-1 bg-white/10 rounded-lg text-sm">
-                                    Kategori: {selectedProduct?.category}
+                                <h2 className="text-3xl font-bold">{selectedProduct?.name}</h2>
+                                <p className="text-2xl text-indigo-400 font-bold">{selectedProduct?.price}</p>
+                                <p className="text-gray-400">{selectedProduct?.description}</p>
+                                <div className="pt-4 border-t border-white/10">
+                                    <h4 className="font-bold mb-2">Spesifikasi:</h4>
+                                    {selectedProduct?.specifications?.map((s, i) => (
+                                        <div key={i} className="text-sm py-1 border-b border-white/5 flex justify-between">
+                                            <span className="text-gray-400">{s.name}</span>
+                                            <span>{s.value}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <p className="text-gray-400 leading-relaxed">
-                                    {selectedProduct?.description ||
-                                        "Tidak ada deskripsi."}
-                                </p>
                             </div>
                         </div>
                     </div>
                 );
             default:
                 return (
-                    <div className="fade-in space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-gradient-to-br from-indigo-500/10 to-purple-900/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                                <p className="text-gray-400 text-sm">
-                                    Total Produk
-                                </p>
-                                <p className="text-3xl font-bold text-white mt-2">
-                                    {products.length}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
+                    <div className="space-y-6">
+                        <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                             <div className="p-6 border-b border-white/10 flex justify-between items-center text-white">
-                                <h3 className="text-xl font-bold">
-                                    Daftar Produk
-                                </h3>
-                                <button
-                                    onClick={() => {
-                                        resetForm();
-                                        setActivePage("tambah");
-                                    }}
-                                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
-                                >
-                                    <PlusCircle className="w-4 h-4" /> Tambah
-                                </button>
+                                <h3 className="text-xl font-bold">Daftar Produk</h3>
+                                <button onClick={() => { resetForm(); setActivePage("tambah"); }} className="bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 text-sm"><PlusCircle size={16}/> Tambah</button>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="w-full text-white">
-                                    <thead>
-                                        <tr className="border-b border-white/10 text-gray-400 text-sm">
-                                            <th className="text-left p-4">
-                                                Produk
-                                            </th>
-                                            <th className="text-left p-4">
-                                                Harga
-                                            </th>
-                                            <th className="text-left p-4">
-                                                Kategori
-                                            </th>
-                                            <th className="text-left p-4">
-                                                Stok
-                                            </th>
-                                            <th className="text-center p-4">
-                                                Aksi
-                                            </th>
-                                        </tr>
-                                    </thead>
+                                <table className="w-full text-white text-left">
+                                    <thead><tr className="text-gray-400 border-b border-white/10"><th className="p-4">Produk</th><th className="p-4">Harga</th><th className="p-4">Aksi</th></tr></thead>
                                     <tbody>
-                                        {products.map(product => (
-                                            <tr
-                                                key={product.id}
-                                                className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                                            >
-                                                <td className="p-4 flex items-center gap-3">
-                                                    <img
-                                                        src={product.image}
-                                                        className="w-10 h-10 rounded object-cover"
-                                                        alt=""
-                                                    />
-                                                    {product.name}
-                                                </td>
-                                                <td className="p-4">
-                                                    {product.price}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className="px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded text-xs">
-                                                        {product.category}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4">
-                                                    {product.stock}
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="flex justify-center gap-2">
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedProduct(
-                                                                    product
-                                                                );
-                                                                setActivePage(
-                                                                    "detail"
-                                                                );
-                                                            }}
-                                                            className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/40"
-                                                        >
-                                                            <Eye className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleEditClick(
-                                                                    product
-                                                                )
-                                                            }
-                                                            className="p-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/40"
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    product.id
-                                                                )
-                                                            }
-                                                            className="p-2 bg-rose-500/20 text-rose-400 rounded-lg hover:bg-rose-500/40"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
+                                        {products.map(p => (
+                                            <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
+                                                <td className="p-4 flex items-center gap-3"><img src={p.image} className="w-10 h-10 rounded object-cover" alt="" />{p.name}</td>
+                                                <td className="p-4">{p.price}</td>
+                                                <td className="p-4 flex gap-2">
+                                                    <button onClick={() => { setSelectedProduct(p); setActivePage("detail"); }} className="p-2 bg-blue-500/20 text-blue-400 rounded-lg"><Eye size={16}/></button>
+                                                    <button onClick={() => handleEditClick(p)} className="p-2 bg-amber-500/20 text-amber-400 rounded-lg"><Edit size={16}/></button>
+                                                    <button onClick={() => handleDelete(p.id)} className="p-2 bg-rose-500/20 text-rose-400 rounded-lg"><Trash2 size={16}/></button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -469,48 +254,17 @@ const Dashboard = () => {
     return (
         <div className="min-h-screen bg-[#050505] text-white">
             <div className="bg-black/40 border-b border-white/10 sticky top-0 z-50 backdrop-blur-lg">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center text-white">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                        Admin Panel
-                    </h1>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-gray-400 hover:text-rose-400 transition-colors"
-                    >
-                        <LogOut className="w-5 h-5" /> Keluar
-                    </button>
+                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Admin Panel</h1>
+                    <button onClick={() => navigate("/login")} className="flex items-center gap-2 text-gray-400"><LogOut size={20}/> Keluar</button>
                 </div>
             </div>
-
-            <div className="container mx-auto px-4 py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    <div className="lg:w-64 space-y-2">
-                        <button
-                            onClick={() => setActivePage("dashboard")}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                                activePage === "dashboard"
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                                    : "text-gray-400 hover:bg-white/5"
-                            }`}
-                        >
-                            <LayoutDashboard className="w-5 h-5" /> Dashboard
-                        </button>
-                        <button
-                            onClick={() => {
-                                resetForm();
-                                setActivePage("tambah");
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                                activePage === "tambah"
-                                    ? "bg-indigo-600 text-white"
-                                    : "text-gray-400 hover:bg-white/5"
-                            }`}
-                        >
-                            <PlusCircle className="w-5 h-5" /> Tambah Produk
-                        </button>
-                    </div>
-                    <div className="flex-1">{renderContent()}</div>
+            <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+                <div className="lg:w-64 space-y-2">
+                    <button onClick={() => setActivePage("dashboard")} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${activePage === "dashboard" ? "bg-indigo-600" : "text-gray-400"}`}><LayoutDashboard size={20}/> Dashboard</button>
+                    <button onClick={() => { resetForm(); setActivePage("tambah"); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${activePage === "tambah" ? "bg-indigo-600" : "text-gray-400"}`}><PlusCircle size={20}/> Tambah Produk</button>
                 </div>
+                <div className="flex-1">{renderContent()}</div>
             </div>
         </div>
     );

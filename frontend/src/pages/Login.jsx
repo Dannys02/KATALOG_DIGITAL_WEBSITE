@@ -4,18 +4,23 @@ import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         email: "",
         password: ""
     });
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+    }, []);
 
     // Sesuaikan URL dengan backend Laravel kamu
     const API_URL = "http://localhost:8000/api";
 
     // 1. AUTO-REDIRECT jika sudah login
     useEffect(() => {
-        setLoading(true);
         const token = localStorage.getItem("admin_token");
         if (token) {
             // Cek keabsahan token ke server
@@ -27,13 +32,19 @@ const AuthPage = () => {
                 .catch(() => {
                     // Jika token expired atau dihapus di server, bersihkan lokal
                     localStorage.removeItem("admin_token");
-                })
-                .finally(() => setLoading(false));
+                });
         }
     }, [navigate]);
-    
-    if (loading) return <div className="min-h-screen flex justify-center
-    items-center"><span>Loading...</span></div>;
+
+    if (loading)
+        return (
+            <div
+                className="min-h-screen flex justify-center
+    items-center"
+            >
+                <span>Loading...</span>
+            </div>
+        );
 
     const handleChange = e => {
         const { name, value } = e.target;
@@ -66,12 +77,14 @@ const AuthPage = () => {
                 "Login gagal, periksa koneksi Anda";
             alert(message);
         } finally {
-            setLoading(false);
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-indigo-950 p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="text-center mb-10">
